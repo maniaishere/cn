@@ -238,53 +238,56 @@ int main()
 #include "netdb.h"
 #include "arpa/inet.h"
 
-int main()
-{
-int socketDescriptor;
+//defines
+#define h_addr h_addr_list[0] /* for backward compatibility */
+
+#define PORT 9002 // port number
+#define MAX 1000  //maximum buffer size
+
+//main function
+int main(){
+    char serverResponse[MAX];
+    char clientResponse[MAX];
+
+    //creating a socket
+    int socketDescriptor = socket(AF_INET, SOCK_STREAM, 0);
+
+    //placeholder for the hostname and my ip address
+    char hostname[MAX], ipaddress[MAX];
+struct hostent *hostIP; //placeholder for the ip address
+//if the gethostname returns a name then the program will get the ip address
+if(gethostname(hostname,sizeof(hostname))==0){
+    hostIP = gethostbyname(hostname);//the netdb.h fucntion gethostbyname
+}else{
+printf("ERROR:FCC4539 IP Address Not ");
+}
 
 struct sockaddr_in serverAddress;
-char sendBuffer[1000],recvBuffer[1000];
+serverAddress.sin_family = AF_INET;
+serverAddress.sin_port = htons(PORT);
+serverAddress.sin_addr.s_addr = INADDR_ANY; 
 
-pid_t cpid;
+connect(socketDescriptor, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
 
-bzero(&serverAddress,sizeof(serverAddress));
+// getting the address port and remote host
+    printf("\nLocalhost: %s\n", inet_ntoa(*(struct in_addr*)hostIP->h_addr));
+    printf("Local Port: %d\n", PORT);
+    printf("Remote Host: %s\n", inet_ntoa(serverAddress.sin_addr));
 
-serverAddress.sin_family=AF_INET;
-serverAddress.sin_addr.s_addr=inet_addr("127.0.0.1");
-serverAddress.sin_port=htons(5500);
+    while (1)
+    {   //recieve the data from the server
+        recv(socketDescriptor, serverResponse, sizeof(serverResponse), 0);
+            //recieved data from the server successfully then printing the data obtained from the server
+            printf("\nSERVER : %s", serverResponse);
+        
+    printf("\ntext message here... :");
+    scanf("%s", clientResponse);
+    send(socketDescriptor, clientResponse, sizeof(clientResponse), 0);
+    }
 
-/*Creating a socket, assigning IP address and port number for that socket*/
-socketDescriptor=socket(AF_INET,SOCK_STREAM,0);
-
-/*Connect establishes connection with the server using server IP address*/
-connect(socketDescriptor,(struct sockaddr*)&serverAddress,sizeof(serverAddress));
-
-/*Fork is used to create a new process*/
-cpid=fork();
-if(cpid==0)
-{
-while(1)
-{
-bzero(&sendBuffer,sizeof(sendBuffer));
-printf("\nType a message here ...  ");
-/*This function is used to read from server*/
-fgets(sendBuffer,10000,stdin);
-/*Send the message to server*/
-send(socketDescriptor,sendBuffer,strlen(sendBuffer)+1,0);
-printf("\nMessage sent !\n");
-}
-}
-else
-{
-while(1)
-{
-bzero(&recvBuffer,sizeof(recvBuffer));
-/*Receive the message from server*/
-recv(socketDescriptor,recvBuffer,sizeof(recvBuffer),0);
-printf("\nSERVER : %s\n",recvBuffer);
-}
-}
-return 0;
+    //closing the socket
+    close(socketDescriptor);
+    return 0;
 }
 ```
 
@@ -299,7 +302,6 @@ full duplex
 #include<arpa/inet.h>
 #include<netinet/in.h>
 #include<string.h>
-#include<strings.h>
 
 int main(int argc,char *argv[])
 {
@@ -359,11 +361,9 @@ return 0;
 ```
 
 ```
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-
+#include "stdio.h"
+#include "stdlib.h"
+#include "string.h"
 //headers for socket and related functions
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -371,8 +371,8 @@ return 0;
 #include <netinet/in.h>
 #include <unistd.h>
 //for gethostbyname
-#include <netdb.h>
-#include <arpa/inet.h>
+#include "netdb.h"
+#include "arpa/inet.h"
 
 int main()
 {
